@@ -1,0 +1,63 @@
+Une autre manière de définir les permissions
+en fonction des rôles dans passé par les annotations.
+.antMatchers(HttpMethod.DELETE,"/directrice/api/**").hasAuthority(ApplicationUserPermissions.PUBLICATION_WRITE.getPermission())
+.antMatchers(HttpMethod.POST,"/directrice/api/**").hasAuthority(ApplicationUserPermissions.PUBLICATION_WRITE.getPermission())
+.antMatchers(HttpMethod.PUT,"/directrice/api/**").hasAuthority(ApplicationUserPermissions.PUBLICATION_WRITE.getPermission())
+.antMatchers(HttpMethod.GET,"/directrice/api/**").hasAnyRole(ApplicationUserRole.ADMIN_PESD.name(),ApplicationUserRole.DIRECTRICE_PESD.name())
+
+Par contre dans ce projet j'utilise les annotations (@PreAuthorize) pour définir les permissions
+attribuées a chaque rôle.
+
+.csrf().disable()//TODO mieux comprendre cette annotation et chercher des references.
+TODO 1 ajouter sur la page de connection une image et le logo du ministere
+TODO 2 faire la page d'index c'est a dire la page d'acceuil.
+TODO 3 creer un bouton de connection permettant de se diriger vers la page de connection.
+TODO 4 creer un bouton permettant a un utilisateur de s'enregistrer (acces formulaire d'enregistrement)
+
+=======================================================================================================
+/**
+     * methode permettant l'implémentation dans la base de données les pilotes avec leur roles.
+     * @return
+     */
+    @Override
+    @Bean
+    protected UserDetailsService userDetailsService()
+    {
+        /**
+         * définition du role pilote, c'est a dire le pilote du système
+         */
+        UserDetails eyramKpetsuUser = User.builder()
+                .username("eyram")
+                .password(passwordEncoder.encode("kpetsu"))
+                .roles(ApplicationUserRole.PILOTE.name()) // ROLE_PILOTE
+                .authorities(ApplicationUserRole.PILOTE.getGrantedAuthorities())
+                .build();
+
+        /**
+         * definition du role du pilote-psed, c'est a dire l'administrateur du système.
+         *
+         */
+       UserDetails francoisUser = User.builder()
+                .username("francois")
+                .password(passwordEncoder.encode("morin"))
+//                .roles(ApplicationUserRole.ADMIN_PESD.name()) //ROLE_ADMIN
+               .authorities(ApplicationUserRole.ADMIN_PESD.getGrantedAuthorities())
+                .build();
+
+
+        /**
+         * definition du role d'un adminitrateur, qui possède un droit de regard
+         * sur tout le système mais en lecture uniquement.
+         * la directrice pour lire tous les contenus publié et demander des modification, elle peut lire
+         * egalement les informations concernants les pilotes qui publient des information.
+         * la diretrice peut lire tous le contenu mais ne peut pas faire de publication, ni des mise
+         * a jour ainsi que de supprimer un utilisateur
+         */
+        UserDetails marieClaudeUser = User.builder()
+                .username("marieClaude")
+                .password(passwordEncoder.encode("marie123"))
+//                .roles(ApplicationUserRole.DIRECTRICE_PESD.name()) //ROLE_DIRECTRICE
+                .authorities(ApplicationUserRole.DIRECTRICE_PESD.getGrantedAuthorities())
+                .build();
+
+        return new InMemoryUserDetailsManager(eyramKpetsuUser,francoisUser,marieClaudeUser);

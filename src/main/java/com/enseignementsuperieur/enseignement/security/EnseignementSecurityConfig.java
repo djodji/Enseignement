@@ -1,16 +1,19 @@
 package com.enseignementsuperieur.enseignement.security;
 
+import com.enseignementsuperieur.enseignement.Authentifications.EnseignementUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * @file: enseignementSecurityConfig.java
@@ -18,6 +21,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
  */
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class EnseignementSecurityConfig extends WebSecurityConfigurerAdapter {
     /**
      * @brief: configuration basique pour une authentification utilisant
@@ -27,10 +31,12 @@ public class EnseignementSecurityConfig extends WebSecurityConfigurerAdapter {
      */
 
     private final PasswordEncoder passwordEncoder;
+    private final EnseignementUserService enseignementUserService;
 
     @Autowired
-    public EnseignementSecurityConfig(PasswordEncoder passwordEncoder) {
+    public EnseignementSecurityConfig(PasswordEncoder passwordEncoder, EnseignementUserService enseignementUserService) {
         this.passwordEncoder = passwordEncoder;
+        this.enseignementUserService = enseignementUserService;
     }
 
     @Override
@@ -42,57 +48,66 @@ public class EnseignementSecurityConfig extends WebSecurityConfigurerAdapter {
          * api** permet de prendre tout le contenu qui vient apres et l'attribué comme
          * droit a un utilisateur.
          * cependant on voudrait qu'un utilisateur-pilote ait le droit de lecture sur son contenu a lui
+         * //TODO mieux comprendre cette annotation et chercher des references.
+         * tokenValiditySeconds() est utiliser dans le cas des base de données en memoire.
+         * tokenValidityRepository() est utiliser dans le cas des bases de données reelle.
          */
-        httpSecurity.authorizeRequests()
+        httpSecurity
+
+//                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())//permettre a spring de generer les tokens
+//                .and()
+                .csrf().disable()
+                .authorizeRequests()
                 .antMatchers("/", "index","css/*","/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(ApplicationUserRole.PILOTE.name())
                 .anyRequest()
                 .authenticated()
                 .and()
-                .httpBasic();
+                .formLogin()
+                    .loginPage("/login").permitAll()
+                    .defaultSuccessUrl("/publications",true)
+                    .passwordParameter("Password")
+                    .usernameParameter("Username")
+                .and()
+                .rememberMe()
+                    .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(30)) //pour un enregistrement dans la base de données en memoire pour deux semaines
+                    .key("hauteSecurite")
+                    .rememberMeParameter("remember-me")
+                .and()
+                .logout()
+                    .logoutUrl("/logout")
+                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout","GET"))
+                    .clearAuthentication(true)
+                    .invalidateHttpSession(true)
+                    .deleteCookies("remember-me","JSESSIONID")
+                    .logoutSuccessUrl("/login");
+
+
     }
 
     /**
-     * methode permettant l'implémentation dans la base de données les pilotes avec leur roles.
-     * @return
+     *
+     * @param authenticationManagerBuilder
+     * @throws Exception
      */
     @Override
-    @Bean
-    protected UserDetailsService userDetailsService()
+    protected void configure (AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception
     {
-        /**
-         * définition du role pilote, c'est a dire le pilote du système
-         */
-        UserDetails eyramKpetsuUser = User.builder()
-                .username("eyram")
-                .password(passwordEncoder.encode("kpetsu"))
-                .roles(ApplicationUserRole.PILOTE.name()) // ROLE_PILOTE
-                .build();
-
-        /**
-         * definition du role du pilote-psed, c'est a dire l'administrateur du système.
-         */
-       UserDetails francoisUser = User.builder()
-                .username("francois")
-                .password(passwordEncoder.encode("morin"))
-                .roles(ApplicationUserRole.ADMIN_PESD.name()) //ROLE DU PILOTE D'ADMINISTRATEUR SYSTÈME
-                .build();
+        authenticationManagerBuilder.authenticationProvider(daoAuthenticationProvider());
+    }
 
 
-        /**
-         * definition du role d'un adminitrateur, qui possède un droit de regard
-         * sur tout le système mais en lecture uniquement.
-         * la directrice pour lire tous les contenus publié et demander des modification, elle peut lire
-         * egalement les informations concernants les pilotes qui publient des information.
-         */
-        UserDetails marieClaudeUser = User.builder()
-                .username("marieClaude")
-                .password(passwordEncoder.encode("marie123"))
-                .roles(ApplicationUserRole.DIRECTRICE_PESD.name()) //ROLE DE LA DIRECTRICE
-                .build();
+    /**
+     *
+     */
 
-        return new InMemoryUserDetailsManager(eyramKpetsuUser,francoisUser,marieClaudeUser);
-
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider()
+    {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setPasswordEncoder(passwordEncoder);
+        provider.setUserDetailsService(enseignementUserService);
+        return provider;
     }
 
 

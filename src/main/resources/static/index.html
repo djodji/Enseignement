@@ -1,1 +1,76 @@
-<h1>Bienvenu sur le portail des documents</h1>
+<!DOCTYPE HTML>
+<html lang="fr" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="StyleIndex.css">
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <script src='https://kit.fontawesome.com/a076d05399.js'crossorigin='anonymous'></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Platformer|Page d'accueil|Québec,Canada</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <link href="https://getbootstrap.com/docs/4.0/examples/signin/signin.css" rel="stylesheet" crossorigin="anonymous">
+
+</head>
+<body>
+    <header class="header" style="margin-top: -30px">
+        <div>
+            <img src="https://upload.wikimedia.org/wikipedia/fr/6/6e/%C3%89ducation_et_Enseignement_sup%C3%A9rieur_Qu%C3%A9bec.svg"
+                 alt="Enseignement Superieur du Québec" width="144" height="75" title="logo du ministère" style="background: white"/>
+        </div>
+        <div class="icon-bar" style="float: right; margin-right: 20px;font-size: 35px;position: relative;top: -80px">
+                <a style="color: darkblue" class="active" href="#"><i class="fa fa-fw fa-user"></i></a>
+                <a style="color: darkblue" href="#"><i class="fa fa-envelope"></i></a>
+                <a style="color: darkblue" href="#"><i class="fa fa-search"></i></a>
+        </div>
+<!--implementation du navbar -->
+        <nav style="background-color: darkblue">
+            <div class="navbar" style="font-size: 20px; color: blanchedalmond">
+                <a style="color: #f1f1f1" class="active" href="#"><i class="fa fa-fw fa-home"></i> Home</a>
+                <a style="color: #f1f1f1" href="#"><i class="far fa-address-book"></i> Document</a>
+                <a style="color: #f1f1f1" href="#"><i class="fa fa-fw fa-info"></i> Info</a>
+
+                <div >
+                    <div class="dropdown">
+                    <button onclick="myFunction()" class="dropbtn">À propos</button>
+                    <div id="myDropdown" class="dropdown-content">
+                        <a style="color: #f1f1f1" href="#">Description PESD</a>
+                        <a style="color: #f1f1f1" href="#">Objectifs PESD</a>
+                        <a style="color: #f1f1f1" href="#">Confidentialité</a>
+                    </div>
+                        <script>
+                            /* lorsque  l'utilisateur clic sur le boutton
+                            * a propos alors le menu se déroule et affiche le contenu. */
+                            function myFunction() {
+                                document.getElementById("myDropdown").classList.toggle("show");
+                            }
+
+                            // Close the dropdown if the user clicks outside of it
+                            window.onclick = function(event) {
+                                if (!event.target.matches('.dropbtn')) {
+                                    var dropdowns = document.getElementsByClassName("dropdown-content");
+                                    var i;
+                                    for (i = 0; i < dropdowns.length; i++) {
+                                        var openDropdown = dropdowns[i];
+                                        if (openDropdown.classList.contains('show')) {
+                                            openDropdown.classList.remove('show');
+                                        }
+                                    }
+                                }
+                            }
+                        </script>
+                    </div>
+
+                </div>
+            </div>
+
+        </nav>
+
+    </header>
+    <h1>Bienvenu sur le portail des documents</h1>
+</body>
+</html>
+
